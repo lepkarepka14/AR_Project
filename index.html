@@ -2,16 +2,15 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Только AR режим</title>
+    <title>Надежный AR (WebXR)</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+    </style>
   </head>
   <body>
-    <a-scene 
-      ar-mode-ui="enabled: true" 
-      vr-mode-ui="enabled: false" 
-      webxr="requiredFeatures: hit-test, local-floor;"
-      renderer="colorManagement: true;">
+    <a-scene webxr="optionalFeatures: hit-test;" renderer="colorManagement: true;">
       
       <a-assets>
         <a-asset-item id="test-model" src="model.glb"></a-asset-item>
@@ -19,7 +18,7 @@
 
       <a-camera position="0 1.6 0"></a-camera>
 
-      <a-entity position="0 1 -2">
+      <a-entity position="0 0 -2">
         <a-gltf-model src="#test-model" animation-mixer></a-gltf-model>
       </a-entity>
 
