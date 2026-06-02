@@ -1,36 +1,36 @@
 ﻿<!DOCTYPE html>
-<html lang="ru">
+<html>
   <head>
-    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR_Project</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
-      body { margin: 0; width: 100vw; height: 100vh; background-color: #f0f0f0; }
-      model-viewer { width: 100%; height: 100%; }
-      /* Стили для кнопки AR */
-      .ar-button {
-        background-color: white; border-radius: 8px; border: none; padding: 12px 20px;
-        position: absolute; bottom: 20px; right: 20px; font-weight: bold;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;
-      }
+      body { margin: 0; padding: 0; width: 100vw; height: 100vh; }
+      model-viewer { width: 100%; height: 100%; background-color: #ffffff; }
     </style>
   </head>
   <body>
     <model-viewer 
+      id="mv"
       src="model.glb" 
-      ios-src="model.usdz"
       ar 
       ar-modes="webxr scene-viewer quick-look" 
-      ar-placement="floor"
       camera-controls 
       autoplay 
-      animation-name="Idle"
-      shadow-intensity="1">
-      
-      <button slot="ar-button" class="ar-button">
-        Разместить на полу
-      </button>
+      ar-placement="floor">
     </model-viewer>
+
+    <script>
+      const mv = document.querySelector('#mv');
+      // Принудительный лог в консоль браузера
+      mv.addEventListener('ar-status', (event) => {
+        console.log("AR статус:", event.detail.status);
+      });
+      // Если кнопка не появляется сама, пробуем вызвать её программно
+      window.onload = () => {
+        if (!mv.canActivateAR) {
+          alert("Ошибка: AR не поддерживается на этом устройстве");
+        }
+      };
+    </script>
   </body>
 </html>
