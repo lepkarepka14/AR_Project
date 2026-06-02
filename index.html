@@ -2,30 +2,29 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Трекинг пола</title>
+    <title>AR Трекинг пола (WebXR)</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
     
     <script>
       AFRAME.registerComponent('ar-placement', {
         init: function () {
-          const sceneEl = this.el;
-          // Находим нашу черепаху в коде
-          const turtleModel = document.querySelector('#turtle-model');
           const reticle = document.querySelector('#reticle');
+          const turtleModel = document.querySelector('#turtle-model');
 
-          // Когда кликаем по экрану...
-          sceneEl.addEventListener('click', (e) => {
-            // Проверяем, что мы в AR и прицел нашел пол
-            if (sceneEl.is('ar-mode') && reticle.getAttribute('visible')) {
-              // Копируем координаты прицела на полу
+          // В WebXR событие тапа по экрану называется 'select'
+          this.el.sceneEl.addEventListener('select', () => {
+            // Если прицел видим (значит пол найден)
+            if (reticle.getAttribute('visible')) {
+              // Берем координаты прицела
               const position = reticle.getAttribute('position');
               
-              // Перемещаем модель в эти координаты и делаем её видимой
+              // Ставим модель туда и включаем её видимость
               turtleModel.setAttribute('position', position);
               turtleModel.setAttribute('visible', 'true');
               
-              // При желании можно спрятать прицел после установки:
+              // Чтобы черепаха не перепрыгивала при случайных тапах, 
+              // можно выключить прицел после первого размещения:
               // reticle.setAttribute('visible', 'false');
             }
           });
@@ -43,9 +42,9 @@
       <a-camera position="0 1.6 0"></a-camera>
 
       <a-entity id="reticle" 
-                ar-hit-test="target: #reticle" 
+                ar-hit-test
                 geometry="primitive: ring; radiusInner: 0.15; radiusOuter: 0.2" 
-                material="color: white; shader: flat" 
+                material="color: #ffffff; shader: flat" 
                 rotation="-90 0 0" 
                 visible="false">
       </a-entity>
