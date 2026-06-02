@@ -6,13 +6,13 @@
   <title>AR Viewer</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
- 
     body {
-      background: #000;
-      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0f;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       overflow: hidden;
       height: 100dvh;
       width: 100vw;
+      color: #fff;
     }
  
     #overlay {
@@ -22,418 +22,459 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(ellipse at 50% 60%, #0d1b2a 0%, #000 100%);
+      padding: 24px;
       z-index: 10;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.5s ease;
     }
+    #overlay.hidden { opacity: 0; pointer-events: none; }
  
-    #overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    .icon { font-size: 56px; margin-bottom: 24px; }
  
-    .logo-ring {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      margin-bottom: 32px;
-      animation: pulse-ring 3s ease-in-out infinite;
-    }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; text-align: center; }
  
-    .logo-ring::before {
-      content: '';
-      position: absolute;
-      inset: -8px;
-      border-radius: 50%;
-      border: 1px solid rgba(99,202,255,0.15);
-      animation: pulse-ring 3s ease-in-out infinite 0.5s;
-    }
- 
-    .logo-ring::after {
-      content: '';
-      position: absolute;
-      inset: -18px;
-      border-radius: 50%;
-      border: 1px solid rgba(99,202,255,0.07);
-      animation: pulse-ring 3s ease-in-out infinite 1s;
-    }
- 
-    @keyframes pulse-ring {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.04); opacity: 0.7; }
-    }
- 
-    .ar-icon {
-      font-size: 48px;
-      filter: drop-shadow(0 0 20px rgba(99,202,255,0.5));
-    }
- 
-    h1 {
-      font-size: 22px;
-      font-weight: 600;
-      color: #fff;
-      letter-spacing: -0.3px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
- 
-    p.sub {
+    .sub {
       font-size: 14px;
-      color: rgba(255,255,255,0.45);
-      text-align: center;
-      max-width: 260px;
-      line-height: 1.5;
-      margin-bottom: 40px;
-    }
- 
-    #ar-btn {
-      background: linear-gradient(135deg, #63caff 0%, #3b82f6 100%);
-      border: none;
-      border-radius: 50px;
-      padding: 16px 40px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #000;
-      cursor: pointer;
-      letter-spacing: -0.2px;
-      box-shadow: 0 8px 32px rgba(59,130,246,0.4);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
- 
-    #ar-btn:active {
-      transform: scale(0.96);
-      box-shadow: 0 4px 16px rgba(59,130,246,0.3);
-    }
- 
-    #ios-btn {
-      display: none;
-      margin-top: 14px;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 50px;
-      padding: 14px 32px;
-      font-size: 14px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.7);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
- 
-    #error-msg {
-      display: none;
-      margin-top: 20px;
-      font-size: 13px;
-      color: rgba(255,120,100,0.8);
+      color: rgba(255,255,255,0.5);
       text-align: center;
       max-width: 280px;
-      line-height: 1.5;
+      line-height: 1.6;
+      margin-bottom: 36px;
     }
  
-    #ui-overlay {
+    .btn {
+      width: 100%;
+      max-width: 300px;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 12px;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.75; }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.12); }
+ 
+    #diag-box {
+      width: 100%;
+      max-width: 300px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.8;
+      display: none;
+    }
+    #diag-box.visible { display: block; }
+    .diag-row { display: flex; justify-content: space-between; gap: 12px; }
+    .diag-label { color: rgba(255,255,255,0.4); }
+    .ok { color: #4ade80; }
+    .fail { color: #f87171; }
+    .warn { color: #fbbf24; }
+ 
+    #error-box {
+      width: 100%;
+      max-width: 300px;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #fca5a5;
+      display: none;
+    }
+    #error-box.visible { display: block; }
+ 
+    /* AR UI */
+    #ar-ui {
       position: fixed;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
+      inset: 0;
+      pointer-events: none;
       z-index: 20;
       display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      pointer-events: none;
     }
+    #ar-ui.visible { display: block; }
  
-    #ui-overlay.visible { display: flex; }
- 
-    .hint-pill {
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.12);
+    #hint {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-radius: 50px;
       padding: 10px 20px;
       font-size: 13px;
-      color: rgba(255,255,255,0.8);
-      text-align: center;
-      pointer-events: none;
+      color: rgba(255,255,255,0.85);
+      white-space: nowrap;
     }
  
     #exit-btn {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
       pointer-events: all;
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.2);
       border-radius: 50px;
-      padding: 12px 28px;
-      font-size: 14px;
+      padding: 13px 32px;
+      font-size: 15px;
       font-weight: 500;
       color: #fff;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
  
-    canvas { display: block; }
+    #loading-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.5);
+      padding: 10px 20px;
+      border-radius: 50px;
+      display: none;
+    }
+    #loading-indicator.visible { display: block; }
+ 
+    canvas { display: block; position: fixed; inset: 0; }
   </style>
 </head>
 <body>
  
 <div id="overlay">
-  <div class="logo-ring">
-    <span class="ar-icon">🔭</span>
-  </div>
+  <div class="icon">🔭</div>
   <h1>AR Viewer</h1>
-  <p class="sub">Направь камеру на пол и поставь модель в своей комнате</p>
-  <button id="ar-btn">Открыть в AR</button>
-  <button id="ios-btn">Открыть через iOS AR</button>
-  <div id="error-msg"></div>
+  <p class="sub">Поставь модель в своей комнате и обходи её со всех сторон</p>
+ 
+  <button class="btn btn-primary" id="ar-btn">Запустить AR</button>
+  <button class="btn btn-secondary" id="diag-btn">Диагностика</button>
+ 
+  <div id="diag-box">
+    <div class="diag-row"><span class="diag-label">HTTPS</span><span id="d-https">—</span></div>
+    <div class="diag-row"><span class="diag-label">navigator.xr</span><span id="d-xr">—</span></div>
+    <div class="diag-row"><span class="diag-label">immersive-ar</span><span id="d-ar">—</span></div>
+    <div class="diag-row"><span class="diag-label">hit-test</span><span id="d-ht">—</span></div>
+    <div class="diag-row"><span class="diag-label">model.glb</span><span id="d-model">—</span></div>
+  </div>
+ 
+  <div id="error-box"></div>
 </div>
  
-<div id="ui-overlay">
-  <div class="hint-pill" id="hint-text">Направь камеру на пол для размещения</div>
+<div id="ar-ui">
+  <div id="loading-indicator">Загрузка модели…</div>
+  <div id="hint">Направь камеру на пол</div>
   <button id="exit-btn">✕ Выйти</button>
 </div>
  
-<!-- Three.js + WebXR -->
 <script type="module">
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
-  import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
  
-  const MODEL_URL = './model.glb'; // путь к модели рядом с index.html
+const MODEL_URL = './model.glb';
  
-  let renderer, scene, camera, clock;
-  let mixer, model;
-  let reticle, hitTestSource, xrSession;
-  let modelPlaced = false;
-  let localSpace;
+// ── DOM refs ────────────────────────────────────────────────────────────────
+const overlay      = document.getElementById('overlay');
+const arBtn        = document.getElementById('ar-btn');
+const diagBtn      = document.getElementById('diag-btn');
+const diagBox      = document.getElementById('diag-box');
+const errorBox     = document.getElementById('error-box');
+const arUI         = document.getElementById('ar-ui');
+const hintEl       = document.getElementById('hint');
+const exitBtn      = document.getElementById('exit-btn');
+const loadingEl    = document.getElementById('loading-indicator');
  
-  const overlay = document.getElementById('overlay');
-  const uiOverlay = document.getElementById('ui-overlay');
-  const hintText = document.getElementById('hint-text');
-  const arBtn = document.getElementById('ar-btn');
-  const iosBtn = document.getElementById('ios-btn');
-  const errorMsg = document.getElementById('error-msg');
+// ── State ───────────────────────────────────────────────────────────────────
+let renderer, scene, camera, clock;
+let mixer, model;
+let reticle, hitTestSource, xrSession, localSpace;
+let modelPlaced = false;
+let modelLoaded  = false;
  
-  // ── Определяем платформу ────────────────────────────────────────────────────
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+// ── Diagnostics ─────────────────────────────────────────────────────────────
+diagBtn.addEventListener('click', async () => {
+  diagBox.classList.add('visible');
  
-  // ── iOS: Quick Look через <a rel="ar"> ─────────────────────────────────────
-  if (isIOS) {
-    iosBtn.style.display = 'block';
-    iosBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.rel = 'ar';
-      link.href = MODEL_URL;           // Quick Look принимает .glb / .usdz
-      link.appendChild(document.createElement('img')); // обязательный дочерний элемент
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+  const setRow = (id, val, cls) => {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.className = cls;
+  };
+ 
+  // HTTPS
+  const isHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+  setRow('d-https', isHttps ? '✓ ' + location.protocol : '✗ нужен HTTPS', isHttps ? 'ok' : 'fail');
+ 
+  // navigator.xr
+  const hasXR = !!navigator.xr;
+  setRow('d-xr', hasXR ? '✓ есть' : '✗ нет', hasXR ? 'ok' : 'fail');
+ 
+  // immersive-ar
+  if (hasXR) {
+    const arSupp = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+    setRow('d-ar', arSupp ? '✓ поддерживается' : '✗ не поддерживается', arSupp ? 'ok' : 'fail');
+    setRow('d-ht', arSupp ? '✓ доступен' : '—', arSupp ? 'ok' : 'warn');
+  } else {
+    setRow('d-ar', '—', 'warn');
+    setRow('d-ht', '—', 'warn');
   }
  
-  // ── WebXR AR (Android Chrome + ARCore) ──────────────────────────────────────
-  async function checkWebXRSupport() {
-    if (!navigator.xr) return false;
-    return await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+  // model.glb fetch check
+  try {
+    const r = await fetch(MODEL_URL, { method: 'HEAD' });
+    setRow('d-model', r.ok ? `✓ ${r.status}` : `✗ ${r.status}`, r.ok ? 'ok' : 'fail');
+  } catch(e) {
+    setRow('d-model', '✗ ' + e.message, 'fail');
+  }
+});
+ 
+// ── AR Button ────────────────────────────────────────────────────────────────
+arBtn.addEventListener('click', async () => {
+  showError('');
+ 
+  // Проверки
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+    showError('Нужен HTTPS. GitHub Pages автоматически даёт HTTPS — убедись что открываешь https://... а не http://');
+    return;
   }
  
-  arBtn.addEventListener('click', async () => {
-    const supported = await checkWebXRSupport();
-    if (!supported) {
-      errorMsg.style.display = 'block';
-      errorMsg.textContent = 'WebXR AR не поддерживается этим браузером. На Android используй Chrome, на iOS — кнопку «Открыть через iOS AR».';
-      return;
-    }
-    initThree();
-    startARSession();
-  });
- 
-  // ── Three.js init ───────────────────────────────────────────────────────────
-  function initThree() {
-    clock = new THREE.Clock();
- 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    document.body.appendChild(renderer.domElement);
- 
-    scene = new THREE.Scene();
- 
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
- 
-    // Освещение
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-    scene.add(hemi);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(1, 3, 2);
-    scene.add(dirLight);
- 
-    // Reticle — прицел на полу
-    const ringGeo = new THREE.RingGeometry(0.06, 0.09, 32);
-    ringGeo.applyMatrix4(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0x63caff, side: THREE.DoubleSide });
-    reticle = new THREE.Mesh(ringGeo, ringMat);
-    reticle.visible = false;
-    scene.add(reticle);
+  if (!navigator.xr) {
+    showError('navigator.xr недоступен. Убедись что используешь Chrome (не Samsung Browser, не Firefox). Версия Chrome должна быть 81+.');
+    return;
   }
  
-  // ── Загрузка модели ─────────────────────────────────────────────────────────
-  function loadModel(callback) {
-    const loader = new GLTFLoader();
-    loader.load(
-      MODEL_URL,
-      (gltf) => {
-        model = gltf.scene;
+  const arSupported = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+  if (!arSupported) {
+    showError('AR не поддерживается этим устройством или браузером. Нужен Android с ARCore и Chrome 81+. Проверь: в адресной строке Chrome напечатай chrome://flags и включи "WebXR AR Module".');
+    return;
+  }
  
-        // Анимация
-        if (gltf.animations && gltf.animations.length) {
-          mixer = new THREE.AnimationMixer(model);
-          gltf.animations.forEach(clip => mixer.clipAction(clip).play());
-        }
+  initThree();
+  await startAR();
+});
  
-        // Прозрачность для искусственного пола
-        // Модель уже содержит прозрачный меш — убедимся что Three.js его читает
-        model.traverse(child => {
-          if (child.isMesh) {
-            child.castShadow = false;
-            // Если материал имеет alphaTest или прозрачность — сохраняем
-            if (child.material) {
-              const mats = Array.isArray(child.material) ? child.material : [child.material];
-              mats.forEach(mat => {
-                if (mat.transparent || mat.opacity < 1) {
-                  mat.transparent = true;
-                  mat.depthWrite = false; // важно для корректной прозрачности
-                  mat.side = THREE.DoubleSide;
-                }
-              });
-            }
+function showError(msg) {
+  if (!msg) { errorBox.classList.remove('visible'); return; }
+  errorBox.textContent = msg;
+  errorBox.classList.add('visible');
+}
+ 
+// ── Three.js ─────────────────────────────────────────────────────────────────
+function initThree() {
+  clock = new THREE.Clock();
+ 
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.xr.enabled = true;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  document.body.appendChild(renderer.domElement);
+ 
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
+ 
+  // Свет
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x443333, 1.5));
+  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+  dir.position.set(1, 3, 2);
+  scene.add(dir);
+ 
+  // Reticle
+  const geo = new THREE.RingGeometry(0.07, 0.10, 32);
+  geo.applyMatrix4(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+  reticle = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x4af0ff, side: THREE.DoubleSide }));
+  reticle.matrixAutoUpdate = false;
+  reticle.visible = false;
+  scene.add(reticle);
+}
+ 
+// ── Загрузка модели ──────────────────────────────────────────────────────────
+function loadModel() {
+  loadingEl.classList.add('visible');
+  const loader = new GLTFLoader();
+  loader.load(
+    MODEL_URL,
+    (gltf) => {
+      loadingEl.classList.remove('visible');
+      model = gltf.scene;
+      modelLoaded = true;
+ 
+      // Анимации
+      if (gltf.animations?.length) {
+        mixer = new THREE.AnimationMixer(model);
+        gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+      }
+ 
+      // Прозрачный пол-полигон — сохраняем прозрачность корректно
+      model.traverse(child => {
+        if (!child.isMesh) return;
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach(mat => {
+          if (mat.opacity < 1.0 || mat.transparent) {
+            mat.transparent = true;
+            mat.depthWrite  = false;
+            mat.alphaTest   = 0;
+            mat.side        = THREE.DoubleSide;
           }
         });
- 
-        model.visible = false;
-        scene.add(model);
-        if (callback) callback();
-      },
-      undefined,
-      (err) => {
-        console.error('Ошибка загрузки модели:', err);
-        errorMsg.style.display = 'block';
-        errorMsg.textContent = 'Не удалось загрузить model.glb. Проверь путь к файлу.';
-      }
-    );
-  }
- 
-  // ── WebXR сессия ────────────────────────────────────────────────────────────
-  async function startARSession() {
-    try {
-      xrSession = await navigator.xr.requestSession('immersive-ar', {
-        requiredFeatures: ['hit-test'],
-        optionalFeatures: ['dom-overlay', 'light-estimation'],
-        domOverlay: { root: document.body }
       });
  
-      renderer.xr.setReferenceSpaceType('local');
-      await renderer.xr.setSession(xrSession);
+      model.visible = false;
+      scene.add(model);
+    },
+    undefined,
+    (err) => {
+      loadingEl.classList.remove('visible');
+      console.error('GLB load error', err);
+      hintEl.textContent = '⚠ Не удалось загрузить model.glb';
+    }
+  );
+}
  
-      xrSession.addEventListener('end', onSessionEnd);
- 
-      overlay.classList.add('hidden');
-      uiOverlay.classList.add('visible');
- 
-      // Загружаем модель после старта сессии
-      loadModel();
- 
-      // Hit-test source
-      const viewerSpace = await xrSession.requestReferenceSpace('viewer');
-      localSpace = await xrSession.requestReferenceSpace('local');
-      hitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
- 
-      // Тап — размещение модели
-      xrSession.addEventListener('select', onSelect);
- 
-      renderer.setAnimationLoop(onXRFrame);
- 
-    } catch (e) {
-      console.error('Ошибка AR сессии:', e);
-      errorMsg.style.display = 'block';
-      errorMsg.textContent = 'Не удалось запустить AR: ' + e.message;
+// ── WebXR Session ─────────────────────────────────────────────────────────────
+async function startAR() {
+  try {
+    xrSession = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['hit-test'],
+      optionalFeatures: ['dom-overlay'],
+      domOverlay: { root: document.body }
+    });
+  } catch(e) {
+    // hit-test недоступен — попробуем без него
+    console.warn('hit-test failed, retrying without:', e);
+    try {
+      xrSession = await navigator.xr.requestSession('immersive-ar', {
+        optionalFeatures: ['dom-overlay'],
+        domOverlay: { root: document.body }
+      });
+      hintEl.textContent = 'Hit-test недоступен — тап поставит модель перед тобой';
+    } catch(e2) {
+      showError('Не удалось запустить AR: ' + e2.message);
+      if (renderer) { renderer.domElement.remove(); renderer.dispose(); renderer = null; }
+      return;
     }
   }
  
-  // ── Тап: разместить модель ──────────────────────────────────────────────────
-  function onSelect() {
-    if (!reticle.visible || !model) return;
-    model.position.setFromMatrixPosition(reticle.matrix);
-    model.visible = true;
-    modelPlaced = true;
-    hintText.textContent = 'Ходи вокруг модели!';
-    reticle.visible = false;
+  renderer.xr.setReferenceSpaceType('local');
+  await renderer.xr.setSession(xrSession);
+ 
+  xrSession.addEventListener('end', onSessionEnd);
+ 
+  overlay.classList.add('hidden');
+  arUI.classList.add('visible');
+ 
+  loadModel();
+ 
+  // Spaces
+  try {
+    const viewerSpace = await xrSession.requestReferenceSpace('viewer');
+    localSpace = await xrSession.requestReferenceSpace('local');
+    hitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
+  } catch(e) {
+    console.warn('Hit-test source error:', e);
+    hitTestSource = null;
   }
  
-  // ── Рендер цикл ─────────────────────────────────────────────────────────────
-  function onXRFrame(timestamp, frame) {
-    if (!frame) return;
-    const delta = clock.getDelta();
+  xrSession.addEventListener('select', onSelect);
+  renderer.setAnimationLoop(onXRFrame);
+}
  
-    // Анимации
-    if (mixer) mixer.update(delta);
+// ── Тап ───────────────────────────────────────────────────────────────────────
+function onSelect(event) {
+  if (!modelLoaded || !model) return;
  
-    // Hit-test
-    if (hitTestSource && !modelPlaced) {
-      const hitTestResults = frame.getHitTestResults(hitTestSource);
-      if (hitTestResults.length > 0) {
-        const hit = hitTestResults[0];
-        const pose = hit.getPose(localSpace);
-        if (pose) {
-          reticle.visible = true;
-          reticle.matrix.fromArray(pose.transform.matrix);
-        }
-      } else {
-        reticle.visible = false;
+  if (reticle.visible) {
+    // Ставим по reticle
+    model.position.setFromMatrixPosition(reticle.matrix);
+    model.rotation.y = Math.random() * Math.PI * 2;
+  } else {
+    // Без hit-test — ставим в 1.5м перед камерой
+    const refSpace = renderer.xr.getReferenceSpace();
+    const frame = event.frame;
+    if (frame && refSpace) {
+      const pose = frame.getViewerPose(refSpace);
+      if (pose) {
+        const t = pose.transform;
+        const forward = new THREE.Vector3(
+          -t.matrix[8], -t.matrix[9], -t.matrix[10]
+        ).normalize().multiplyScalar(1.5);
+        model.position.set(
+          t.position.x + forward.x,
+          t.position.y - 0.5,
+          t.position.z + forward.z
+        );
       }
     }
- 
-    renderer.render(scene, camera);
   }
  
-  // ── Выход из AR ─────────────────────────────────────────────────────────────
-  function onSessionEnd() {
-    hitTestSource?.cancel();
-    hitTestSource = null;
-    xrSession = null;
-    modelPlaced = false;
-    uiOverlay.classList.remove('visible');
-    overlay.classList.remove('hidden');
-    // Убираем canvas
-    if (renderer) {
-      renderer.domElement.remove();
-      renderer.dispose();
-      renderer = null;
+  model.visible = true;
+  modelPlaced = true;
+  reticle.visible = false;
+  hintEl.textContent = 'Ходи вокруг модели!';
+}
+ 
+// ── Render loop ───────────────────────────────────────────────────────────────
+function onXRFrame(timestamp, frame) {
+  if (!frame) return;
+ 
+  if (mixer) mixer.update(clock.getDelta());
+ 
+  if (hitTestSource && localSpace && !modelPlaced) {
+    const results = frame.getHitTestResults(hitTestSource);
+    if (results.length > 0) {
+      const pose = results[0].getPose(localSpace);
+      if (pose) {
+        reticle.visible = true;
+        reticle.matrix.fromArray(pose.transform.matrix);
+      }
+    } else {
+      reticle.visible = false;
     }
-    scene = null;
-    model = null;
-    mixer = null;
   }
  
-  document.getElementById('exit-btn').addEventListener('click', () => {
-    xrSession?.end();
-  });
+  renderer.render(scene, camera);
+}
  
-  // ── Ресайз ──────────────────────────────────────────────────────────────────
-  window.addEventListener('resize', () => {
-    if (!renderer) return;
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+// ── Exit ──────────────────────────────────────────────────────────────────────
+function onSessionEnd() {
+  hitTestSource?.cancel?.();
+  hitTestSource = null;
+  xrSession = null;
+  modelPlaced = false;
+  modelLoaded = false;
+  mixer = null;
+  model = null;
+  arUI.classList.remove('visible');
+  overlay.classList.remove('hidden');
+  if (renderer) {
+    renderer.setAnimationLoop(null);
+    renderer.domElement.remove();
+    renderer.dispose();
+    renderer = null;
+  }
+}
+ 
+exitBtn.addEventListener('click', () => xrSession?.end());
+ 
+window.addEventListener('resize', () => {
+  if (!renderer || !camera) return;
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
 </script>
 </body>
 </html>
