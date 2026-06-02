@@ -2,15 +2,39 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Надежный AR (WebXR)</title>
+    <title>AR Трекинг пола</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
-    <style>
-      body { margin: 0; overflow: hidden; }
-    </style>
+    
+    <script>
+      AFRAME.registerComponent('ar-placement', {
+        init: function () {
+          const sceneEl = this.el;
+          // Находим нашу черепаху в коде
+          const turtleModel = document.querySelector('#turtle-model');
+          const reticle = document.querySelector('#reticle');
+
+          // Когда кликаем по экрану...
+          sceneEl.addEventListener('click', (e) => {
+            // Проверяем, что мы в AR и прицел нашел пол
+            if (sceneEl.is('ar-mode') && reticle.getAttribute('visible')) {
+              // Копируем координаты прицела на полу
+              const position = reticle.getAttribute('position');
+              
+              // Перемещаем модель в эти координаты и делаем её видимой
+              turtleModel.setAttribute('position', position);
+              turtleModel.setAttribute('visible', 'true');
+              
+              // При желании можно спрятать прицел после установки:
+              // reticle.setAttribute('visible', 'false');
+            }
+          });
+        }
+      });
+    </script>
   </head>
   <body>
-    <a-scene webxr="optionalFeatures: hit-test;" renderer="colorManagement: true;">
+    <a-scene ar-placement webxr="requiredFeatures: hit-test, local-floor;" renderer="colorManagement: true;">
       
       <a-assets>
         <a-asset-item id="test-model" src="model.glb"></a-asset-item>
@@ -18,8 +42,16 @@
 
       <a-camera position="0 1.6 0"></a-camera>
 
-      <a-entity position="0 0 -2">
-        <a-gltf-model src="#test-model" animation-mixer></a-gltf-model>
+      <a-entity id="reticle" 
+                ar-hit-test="target: #reticle" 
+                geometry="primitive: ring; radiusInner: 0.15; radiusOuter: 0.2" 
+                material="color: white; shader: flat" 
+                rotation="-90 0 0" 
+                visible="false">
+      </a-entity>
+
+      <a-entity id="turtle-model" visible="false">
+        <a-gltf-model src="#test-model" scale="1 1 1" animation-mixer></a-gltf-model>
       </a-entity>
 
     </a-scene>
