@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Трекинг пола (WebXR)</title>
+    <title>AR_Project - Трекинг пола</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
     
@@ -12,20 +12,16 @@
           const reticle = document.querySelector('#reticle');
           const turtleModel = document.querySelector('#turtle-model');
 
-          // В WebXR событие тапа по экрану называется 'select'
-          this.el.sceneEl.addEventListener('select', () => {
-            // Если прицел видим (значит пол найден)
+          // ИСПРАВЛЕНО: this.el — это и есть наша сцена. 
+          this.el.addEventListener('select', () => {
+            // Проверяем, виден ли прицел (найден ли пол)
             if (reticle.getAttribute('visible')) {
-              // Берем координаты прицела
+              // Берем координаты белого кольца
               const position = reticle.getAttribute('position');
               
-              // Ставим модель туда и включаем её видимость
+              // Перемещаем черепаху в эти координаты и делаем видимой
               turtleModel.setAttribute('position', position);
               turtleModel.setAttribute('visible', 'true');
-              
-              // Чтобы черепаха не перепрыгивала при случайных тапах, 
-              // можно выключить прицел после первого размещения:
-              // reticle.setAttribute('visible', 'false');
             }
           });
         }
