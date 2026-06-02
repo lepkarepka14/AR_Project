@@ -2,26 +2,51 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR_Project - Трекинг пола</title>
+    <title>AR_Project - Дебаг</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+    
+    <style>
+      /* Окно для вывода системных сообщений прямо на телефоне */
+      #debug-log {
+        position: fixed; top: 10px; left: 10px; width: 90%;
+        background: rgba(0,0,0,0.8); color: #00ff00; font-family: monospace;
+        padding: 12px; z-index: 9999; border-radius: 5px; pointer-events: none;
+        font-size: 16px;
+      }
+    </style>
     
     <script>
       AFRAME.registerComponent('ar-placement', {
         init: function () {
           const reticle = document.querySelector('#reticle');
           const turtleModel = document.querySelector('#turtle-model');
+          const debugLog = document.querySelector('#debug-log');
 
-          // ИСПРАВЛЕНО: this.el — это и есть наша сцена. 
+          debugLog.innerText = "1. Ждем запуска AR...";
+
+          // Отслеживаем вход в AR режим
+          this.el.addEventListener('enter-vr', () => {
+            if (this.el.is('ar-mode')) {
+              debugLog.innerText = "2. AR включен. Ищите пол!";
+            }
+          });
+
+          // Отслеживаем касание экрана
           this.el.addEventListener('select', () => {
-            // Проверяем, виден ли прицел (найден ли пол)
-            if (reticle.getAttribute('visible')) {
-              // Берем координаты белого кольца
-              const position = reticle.getAttribute('position');
+            debugLog.innerText = "3. Тап сработал!";
+            
+            // ИСПРАВЛЕННЫЙ БАГ: проверяем видимость напрямую в 3D-движке
+            if (reticle.object3D.visible) {
+              debugLog.innerText = "4. УСПЕХ! Пол найден, ставим модель.";
               
-              // Перемещаем черепаху в эти координаты и делаем видимой
-              turtleModel.setAttribute('position', position);
-              turtleModel.setAttribute('visible', 'true');
+              // Берем физические координаты прицела
+              const position = reticle.object3D.position;
+              
+              // Перемещаем черепаху на место прицела
+              turtleModel.setAttribute('position', {x: position.x, y: position.y, z: position.z});
+            } else {
+              debugLog.innerText = "3. Тап сработал, но прицел не видит пол.";
             }
           });
         }
@@ -29,10 +54,12 @@
     </script>
   </head>
   <body>
+    <div id="debug-log">0. Идет загрузка...</div>
+
     <a-scene ar-placement webxr="requiredFeatures: hit-test, local-floor;" renderer="colorManagement: true;">
       
       <a-assets>
-        <a-asset-item id="test-model" src="model.glb"></a-asset-item>
+        <a-asset-item id="test-model" src="./model.glb"></a-asset-item>
       </a-assets>
 
       <a-camera position="0 1.6 0"></a-camera>
@@ -40,12 +67,12 @@
       <a-entity id="reticle" 
                 ar-hit-test
                 geometry="primitive: ring; radiusInner: 0.15; radiusOuter: 0.2" 
-                material="color: #ffffff; shader: flat" 
+                material="color: #00ff00; shader: flat" 
                 rotation="-90 0 0" 
                 visible="false">
       </a-entity>
 
-      <a-entity id="turtle-model" visible="false">
+      <a-entity id="turtle-model" position="0 0 -2" visible="true">
         <a-gltf-model src="#test-model" scale="1 1 1" animation-mixer></a-gltf-model>
       </a-entity>
 
