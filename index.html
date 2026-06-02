@@ -8,13 +8,12 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       background: #0a0a0f;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       overflow: hidden;
       height: 100dvh;
       width: 100vw;
       color: #fff;
     }
- 
     #overlay {
       position: fixed;
       inset: 0;
@@ -22,135 +21,75 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      z-index: 10;
-      transition: opacity 0.5s ease;
+      padding: 28px;
+      z-index: 100;
+      transition: opacity 0.4s;
     }
     #overlay.hidden { opacity: 0; pointer-events: none; }
- 
-    .icon { font-size: 56px; margin-bottom: 24px; }
- 
+    .icon { font-size: 60px; margin-bottom: 20px; }
     h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; text-align: center; }
- 
     .sub {
-      font-size: 14px;
-      color: rgba(255,255,255,0.5);
-      text-align: center;
-      max-width: 280px;
-      line-height: 1.6;
-      margin-bottom: 36px;
+      font-size: 14px; color: rgba(255,255,255,0.5);
+      text-align: center; max-width: 280px; line-height: 1.6; margin-bottom: 32px;
     }
- 
     .btn {
-      width: 100%;
-      max-width: 300px;
-      padding: 16px;
-      border-radius: 14px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 12px;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s;
+      display: block; width: 100%; max-width: 300px;
+      padding: 16px; border-radius: 14px; border: none;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      margin-bottom: 12px; -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s; text-align: center;
     }
-    .btn:active { opacity: 0.75; }
+    .btn:active { opacity: 0.7; }
     .btn-primary { background: #3b82f6; color: #fff; }
-    .btn-secondary { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.12); }
- 
+    .btn-secondary {
+      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,255,0.12) !important;
+    }
     #diag-box {
-      width: 100%;
-      max-width: 300px;
+      width: 100%; max-width: 300px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-top: 8px;
-      font-size: 12px;
-      line-height: 1.8;
-      display: none;
+      border-radius: 12px; padding: 14px 16px;
+      margin-top: 4px; font-size: 12px; line-height: 2;
     }
-    #diag-box.visible { display: block; }
-    .diag-row { display: flex; justify-content: space-between; gap: 12px; }
+    .diag-row { display: flex; justify-content: space-between; }
     .diag-label { color: rgba(255,255,255,0.4); }
-    .ok { color: #4ade80; }
-    .fail { color: #f87171; }
-    .warn { color: #fbbf24; }
- 
+    .ok { color: #4ade80; } .fail { color: #f87171; } .warn { color: #fbbf24; }
     #error-box {
-      width: 100%;
-      max-width: 300px;
+      width: 100%; max-width: 300px;
       background: rgba(248,113,113,0.1);
       border: 1px solid rgba(248,113,113,0.3);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #fca5a5;
-      display: none;
+      border-radius: 12px; padding: 14px 16px;
+      margin-top: 12px; font-size: 13px; line-height: 1.6; color: #fca5a5;
     }
-    #error-box.visible { display: block; }
- 
     /* AR UI */
     #ar-ui {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 20;
-      display: none;
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 200; display: none;
     }
     #ar-ui.visible { display: block; }
- 
     #hint {
-      position: absolute;
-      bottom: 120px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(10px);
+      position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.85);
-      white-space: nowrap;
+      border-radius: 50px; padding: 10px 20px;
+      font-size: 13px; color: rgba(255,255,255,0.85); white-space: nowrap;
     }
- 
     #exit-btn {
-      position: absolute;
-      bottom: 48px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%);
       pointer-events: all;
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 50px;
-      padding: 13px 32px;
-      font-size: 15px;
-      font-weight: 500;
-      color: #fff;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 50px;
+      padding: 14px 36px; font-size: 15px; font-weight: 500; color: #fff;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
- 
-    #loading-indicator {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 13px;
-      color: rgba(255,255,255,0.6);
-      background: rgba(0,0,0,0.5);
-      padding: 10px 20px;
-      border-radius: 50px;
-      display: none;
+    #loading-msg {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      background: rgba(0,0,0,0.55); border-radius: 50px;
+      padding: 10px 22px; font-size: 13px; color: rgba(255,255,255,0.7);
     }
-    #loading-indicator.visible { display: block; }
- 
-    canvas { display: block; position: fixed; inset: 0; }
+    canvas { position: fixed; inset: 0; display: block; z-index: 1; }
   </style>
 </head>
 <body>
@@ -158,323 +97,328 @@
 <div id="overlay">
   <div class="icon">🔭</div>
   <h1>AR Viewer</h1>
-  <p class="sub">Поставь модель в своей комнате и обходи её со всех сторон</p>
+  <p class="sub">Поставь модель в своей комнате и обходи со всех сторон</p>
  
   <button class="btn btn-primary" id="ar-btn">Запустить AR</button>
   <button class="btn btn-secondary" id="diag-btn">Диагностика</button>
  
-  <div id="diag-box">
-    <div class="diag-row"><span class="diag-label">HTTPS</span><span id="d-https">—</span></div>
-    <div class="diag-row"><span class="diag-label">navigator.xr</span><span id="d-xr">—</span></div>
-    <div class="diag-row"><span class="diag-label">immersive-ar</span><span id="d-ar">—</span></div>
-    <div class="diag-row"><span class="diag-label">hit-test</span><span id="d-ht">—</span></div>
-    <div class="diag-row"><span class="diag-label">model.glb</span><span id="d-model">—</span></div>
+  <div id="diag-box" style="display:none">
+    <div class="diag-row"><span class="diag-label">HTTPS</span><span id="d-https">…</span></div>
+    <div class="diag-row"><span class="diag-label">navigator.xr</span><span id="d-xr">…</span></div>
+    <div class="diag-row"><span class="diag-label">immersive-ar</span><span id="d-ar">…</span></div>
+    <div class="diag-row"><span class="diag-label">model.glb</span><span id="d-model">…</span></div>
   </div>
  
-  <div id="error-box"></div>
+  <div id="error-box" style="display:none"></div>
 </div>
  
 <div id="ar-ui">
-  <div id="loading-indicator">Загрузка модели…</div>
+  <div id="loading-msg" style="display:none">Загрузка модели…</div>
   <div id="hint">Направь камеру на пол</div>
   <button id="exit-btn">✕ Выйти</button>
 </div>
  
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
+<!-- THREE.js UMD (не module!) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/js/loaders/GLTFLoader.js"></script>
  
-const MODEL_URL = './model.glb';
+<script>
+(function() {
+  'use strict';
  
-// ── DOM refs ────────────────────────────────────────────────────────────────
-const overlay      = document.getElementById('overlay');
-const arBtn        = document.getElementById('ar-btn');
-const diagBtn      = document.getElementById('diag-btn');
-const diagBox      = document.getElementById('diag-box');
-const errorBox     = document.getElementById('error-box');
-const arUI         = document.getElementById('ar-ui');
-const hintEl       = document.getElementById('hint');
-const exitBtn      = document.getElementById('exit-btn');
-const loadingEl    = document.getElementById('loading-indicator');
+  var MODEL_URL = './model.glb';
  
-// ── State ───────────────────────────────────────────────────────────────────
-let renderer, scene, camera, clock;
-let mixer, model;
-let reticle, hitTestSource, xrSession, localSpace;
-let modelPlaced = false;
-let modelLoaded  = false;
+  // DOM
+  var overlay    = document.getElementById('overlay');
+  var arBtn      = document.getElementById('ar-btn');
+  var diagBtn    = document.getElementById('diag-btn');
+  var diagBox    = document.getElementById('diag-box');
+  var errorBox   = document.getElementById('error-box');
+  var arUI       = document.getElementById('ar-ui');
+  var hintEl     = document.getElementById('hint');
+  var exitBtn    = document.getElementById('exit-btn');
+  var loadingMsg = document.getElementById('loading-msg');
  
-// ── Diagnostics ─────────────────────────────────────────────────────────────
-diagBtn.addEventListener('click', async () => {
-  diagBox.classList.add('visible');
+  // State
+  var renderer, scene, camera, clock;
+  var mixer, model;
+  var reticle, hitTestSource, xrSession, localSpace;
+  var modelPlaced = false;
+  var modelLoaded  = false;
  
-  const setRow = (id, val, cls) => {
-    const el = document.getElementById(id);
-    el.textContent = val;
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function showError(msg) {
+    if (!msg) { errorBox.style.display = 'none'; return; }
+    errorBox.textContent = msg;
+    errorBox.style.display = 'block';
+  }
+ 
+  function setDiag(id, text, cls) {
+    var el = document.getElementById(id);
+    el.textContent = text;
     el.className = cls;
-  };
- 
-  // HTTPS
-  const isHttps = location.protocol === 'https:' || location.hostname === 'localhost';
-  setRow('d-https', isHttps ? '✓ ' + location.protocol : '✗ нужен HTTPS', isHttps ? 'ok' : 'fail');
- 
-  // navigator.xr
-  const hasXR = !!navigator.xr;
-  setRow('d-xr', hasXR ? '✓ есть' : '✗ нет', hasXR ? 'ok' : 'fail');
- 
-  // immersive-ar
-  if (hasXR) {
-    const arSupp = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
-    setRow('d-ar', arSupp ? '✓ поддерживается' : '✗ не поддерживается', arSupp ? 'ok' : 'fail');
-    setRow('d-ht', arSupp ? '✓ доступен' : '—', arSupp ? 'ok' : 'warn');
-  } else {
-    setRow('d-ar', '—', 'warn');
-    setRow('d-ht', '—', 'warn');
   }
  
-  // model.glb fetch check
-  try {
-    const r = await fetch(MODEL_URL, { method: 'HEAD' });
-    setRow('d-model', r.ok ? `✓ ${r.status}` : `✗ ${r.status}`, r.ok ? 'ok' : 'fail');
-  } catch(e) {
-    setRow('d-model', '✗ ' + e.message, 'fail');
-  }
-});
+  // ── Diagnostics ──────────────────────────────────────────────────────────
+  diagBtn.addEventListener('click', function() {
+    diagBox.style.display = diagBox.style.display === 'none' ? 'block' : 'none';
+    if (diagBox.style.display === 'none') return;
  
-// ── AR Button ────────────────────────────────────────────────────────────────
-arBtn.addEventListener('click', async () => {
-  showError('');
+    var isHttps = location.protocol === 'https:' || location.hostname === 'localhost';
+    setDiag('d-https', isHttps ? '✓ ' + location.protocol : '✗ нужен HTTPS', isHttps ? 'ok' : 'fail');
  
-  // Проверки
-  if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-    showError('Нужен HTTPS. GitHub Pages автоматически даёт HTTPS — убедись что открываешь https://... а не http://');
-    return;
-  }
+    var hasXR = !!navigator.xr;
+    setDiag('d-xr', hasXR ? '✓ есть' : '✗ нет (не Chrome?)', hasXR ? 'ok' : 'fail');
  
-  if (!navigator.xr) {
-    showError('navigator.xr недоступен. Убедись что используешь Chrome (не Samsung Browser, не Firefox). Версия Chrome должна быть 81+.');
-    return;
-  }
- 
-  const arSupported = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
-  if (!arSupported) {
-    showError('AR не поддерживается этим устройством или браузером. Нужен Android с ARCore и Chrome 81+. Проверь: в адресной строке Chrome напечатай chrome://flags и включи "WebXR AR Module".');
-    return;
-  }
- 
-  initThree();
-  await startAR();
-});
- 
-function showError(msg) {
-  if (!msg) { errorBox.classList.remove('visible'); return; }
-  errorBox.textContent = msg;
-  errorBox.classList.add('visible');
-}
- 
-// ── Three.js ─────────────────────────────────────────────────────────────────
-function initThree() {
-  clock = new THREE.Clock();
- 
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.xr.enabled = true;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  document.body.appendChild(renderer.domElement);
- 
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
- 
-  // Свет
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x443333, 1.5));
-  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
-  dir.position.set(1, 3, 2);
-  scene.add(dir);
- 
-  // Reticle
-  const geo = new THREE.RingGeometry(0.07, 0.10, 32);
-  geo.applyMatrix4(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
-  reticle = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x4af0ff, side: THREE.DoubleSide }));
-  reticle.matrixAutoUpdate = false;
-  reticle.visible = false;
-  scene.add(reticle);
-}
- 
-// ── Загрузка модели ──────────────────────────────────────────────────────────
-function loadModel() {
-  loadingEl.classList.add('visible');
-  const loader = new GLTFLoader();
-  loader.load(
-    MODEL_URL,
-    (gltf) => {
-      loadingEl.classList.remove('visible');
-      model = gltf.scene;
-      modelLoaded = true;
- 
-      // Анимации
-      if (gltf.animations?.length) {
-        mixer = new THREE.AnimationMixer(model);
-        gltf.animations.forEach(clip => mixer.clipAction(clip).play());
-      }
- 
-      // Прозрачный пол-полигон — сохраняем прозрачность корректно
-      model.traverse(child => {
-        if (!child.isMesh) return;
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach(mat => {
-          if (mat.opacity < 1.0 || mat.transparent) {
-            mat.transparent = true;
-            mat.depthWrite  = false;
-            mat.alphaTest   = 0;
-            mat.side        = THREE.DoubleSide;
-          }
-        });
-      });
- 
-      model.visible = false;
-      scene.add(model);
-    },
-    undefined,
-    (err) => {
-      loadingEl.classList.remove('visible');
-      console.error('GLB load error', err);
-      hintEl.textContent = '⚠ Не удалось загрузить model.glb';
+    if (hasXR) {
+      navigator.xr.isSessionSupported('immersive-ar')
+        .then(function(ok) {
+          setDiag('d-ar', ok ? '✓ поддерживается' : '✗ нет (нет ARCore?)', ok ? 'ok' : 'fail');
+        })
+        .catch(function() { setDiag('d-ar', '✗ ошибка', 'fail'); });
+    } else {
+      setDiag('d-ar', '—', 'warn');
     }
-  );
-}
  
-// ── WebXR Session ─────────────────────────────────────────────────────────────
-async function startAR() {
-  try {
-    xrSession = await navigator.xr.requestSession('immersive-ar', {
+    fetch(MODEL_URL, { method: 'HEAD' })
+      .then(function(r) {
+        setDiag('d-model', r.ok ? '✓ ' + r.status : '✗ ' + r.status, r.ok ? 'ok' : 'fail');
+      })
+      .catch(function(e) { setDiag('d-model', '✗ ' + e.message, 'fail'); });
+  });
+ 
+  // ── AR Button ────────────────────────────────────────────────────────────
+  arBtn.addEventListener('click', function() {
+    showError('');
+ 
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      showError('Нужен HTTPS. Открывай ссылку через https://username.github.io/...');
+      return;
+    }
+    if (!navigator.xr) {
+      showError('WebXR недоступен. Используй Chrome на Android. Версия 81+.');
+      return;
+    }
+ 
+    navigator.xr.isSessionSupported('immersive-ar').then(function(supported) {
+      if (!supported) {
+        showError('AR не поддерживается. Нужен Android с ARCore (Google Play Services for AR) и Chrome 81+.');
+        return;
+      }
+      initThree();
+      startAR();
+    }).catch(function(e) {
+      showError('Ошибка проверки AR: ' + e.message);
+    });
+  });
+ 
+  // ── Three.js init ─────────────────────────────────────────────────────────
+  function initThree() {
+    clock = new THREE.Clock();
+ 
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.body.appendChild(renderer.domElement);
+ 
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
+ 
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x443333, 1.5));
+    var dir = new THREE.DirectionalLight(0xffffff, 1.0);
+    dir.position.set(1, 3, 2);
+    scene.add(dir);
+ 
+    // Reticle
+    var geo = new THREE.RingGeometry(0.07, 0.10, 32);
+    geo.applyMatrix4(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    reticle = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x4af0ff, side: THREE.DoubleSide }));
+    reticle.matrixAutoUpdate = false;
+    reticle.visible = false;
+    scene.add(reticle);
+  }
+ 
+  // ── Load model ────────────────────────────────────────────────────────────
+  function loadModel() {
+    loadingMsg.style.display = 'block';
+    var loader = new THREE.GLTFLoader();
+    loader.load(
+      MODEL_URL,
+      function(gltf) {
+        loadingMsg.style.display = 'none';
+        model = gltf.scene;
+        modelLoaded = true;
+ 
+        if (gltf.animations && gltf.animations.length) {
+          mixer = new THREE.AnimationMixer(model);
+          gltf.animations.forEach(function(clip) {
+            mixer.clipAction(clip).play();
+          });
+        }
+ 
+        // Прозрачный пол-полигон
+        model.traverse(function(child) {
+          if (!child.isMesh) return;
+          var mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach(function(mat) {
+            if (mat.opacity < 1.0 || mat.transparent) {
+              mat.transparent = true;
+              mat.depthWrite  = false;
+              mat.alphaTest   = 0;
+              mat.side        = THREE.DoubleSide;
+            }
+          });
+        });
+ 
+        model.visible = false;
+        scene.add(model);
+      },
+      undefined,
+      function(err) {
+        loadingMsg.style.display = 'none';
+        hintEl.textContent = '⚠ Ошибка загрузки model.glb';
+        console.error(err);
+      }
+    );
+  }
+ 
+  // ── Start AR ──────────────────────────────────────────────────────────────
+  function startAR() {
+    var sessionOpts = {
       requiredFeatures: ['hit-test'],
       optionalFeatures: ['dom-overlay'],
       domOverlay: { root: document.body }
-    });
-  } catch(e) {
-    // hit-test недоступен — попробуем без него
-    console.warn('hit-test failed, retrying without:', e);
-    try {
-      xrSession = await navigator.xr.requestSession('immersive-ar', {
-        optionalFeatures: ['dom-overlay'],
-        domOverlay: { root: document.body }
+    };
+ 
+    navigator.xr.requestSession('immersive-ar', sessionOpts)
+      .catch(function(e) {
+        // hit-test не поддерживается — пробуем без него
+        console.warn('Retry without hit-test:', e);
+        return navigator.xr.requestSession('immersive-ar', {
+          optionalFeatures: ['dom-overlay'],
+          domOverlay: { root: document.body }
+        });
+      })
+      .then(function(session) {
+        xrSession = session;
+        renderer.xr.setReferenceSpaceType('local');
+        return renderer.xr.setSession(session).then(function() { return session; });
+      })
+      .then(function(session) {
+        session.addEventListener('end', onSessionEnd);
+        session.addEventListener('select', onSelect);
+ 
+        overlay.classList.add('hidden');
+        arUI.classList.add('visible');
+        loadModel();
+ 
+        // Hit-test source
+        return Promise.all([
+          session.requestReferenceSpace('viewer'),
+          session.requestReferenceSpace('local')
+        ]).then(function(spaces) {
+          localSpace = spaces[1];
+          return session.requestHitTestSource({ space: spaces[0] });
+        }).then(function(src) {
+          hitTestSource = src;
+        });
+      })
+      .catch(function(e) {
+        showError('Не удалось запустить AR: ' + e.message);
+        if (renderer) { renderer.domElement.remove(); renderer.dispose(); renderer = null; }
       });
-      hintEl.textContent = 'Hit-test недоступен — тап поставит модель перед тобой';
-    } catch(e2) {
-      showError('Не удалось запустить AR: ' + e2.message);
-      if (renderer) { renderer.domElement.remove(); renderer.dispose(); renderer = null; }
-      return;
-    }
+ 
+    // Запускаем render loop
+    setTimeout(function() {
+      if (renderer) renderer.setAnimationLoop(onXRFrame);
+    }, 500);
   }
  
-  renderer.xr.setReferenceSpaceType('local');
-  await renderer.xr.setSession(xrSession);
+  // ── Select (tap) ──────────────────────────────────────────────────────────
+  function onSelect(event) {
+    if (!modelLoaded || !model) return;
  
-  xrSession.addEventListener('end', onSessionEnd);
- 
-  overlay.classList.add('hidden');
-  arUI.classList.add('visible');
- 
-  loadModel();
- 
-  // Spaces
-  try {
-    const viewerSpace = await xrSession.requestReferenceSpace('viewer');
-    localSpace = await xrSession.requestReferenceSpace('local');
-    hitTestSource = await xrSession.requestHitTestSource({ space: viewerSpace });
-  } catch(e) {
-    console.warn('Hit-test source error:', e);
-    hitTestSource = null;
-  }
- 
-  xrSession.addEventListener('select', onSelect);
-  renderer.setAnimationLoop(onXRFrame);
-}
- 
-// ── Тап ───────────────────────────────────────────────────────────────────────
-function onSelect(event) {
-  if (!modelLoaded || !model) return;
- 
-  if (reticle.visible) {
-    // Ставим по reticle
-    model.position.setFromMatrixPosition(reticle.matrix);
-    model.rotation.y = Math.random() * Math.PI * 2;
-  } else {
-    // Без hit-test — ставим в 1.5м перед камерой
-    const refSpace = renderer.xr.getReferenceSpace();
-    const frame = event.frame;
-    if (frame && refSpace) {
-      const pose = frame.getViewerPose(refSpace);
-      if (pose) {
-        const t = pose.transform;
-        const forward = new THREE.Vector3(
-          -t.matrix[8], -t.matrix[9], -t.matrix[10]
-        ).normalize().multiplyScalar(1.5);
-        model.position.set(
-          t.position.x + forward.x,
-          t.position.y - 0.5,
-          t.position.z + forward.z
-        );
-      }
-    }
-  }
- 
-  model.visible = true;
-  modelPlaced = true;
-  reticle.visible = false;
-  hintEl.textContent = 'Ходи вокруг модели!';
-}
- 
-// ── Render loop ───────────────────────────────────────────────────────────────
-function onXRFrame(timestamp, frame) {
-  if (!frame) return;
- 
-  if (mixer) mixer.update(clock.getDelta());
- 
-  if (hitTestSource && localSpace && !modelPlaced) {
-    const results = frame.getHitTestResults(hitTestSource);
-    if (results.length > 0) {
-      const pose = results[0].getPose(localSpace);
-      if (pose) {
-        reticle.visible = true;
-        reticle.matrix.fromArray(pose.transform.matrix);
-      }
+    if (reticle.visible) {
+      model.position.setFromMatrixPosition(reticle.matrix);
+      model.rotation.y = Math.random() * Math.PI * 2;
     } else {
-      reticle.visible = false;
+      // Без hit-test — 1.5м перед камерой
+      var refSpace = renderer.xr.getReferenceSpace();
+      if (event.frame && refSpace) {
+        var pose = event.frame.getViewerPose(refSpace);
+        if (pose) {
+          var t = pose.transform;
+          var m = t.matrix;
+          model.position.set(
+            t.position.x + (-m[8]) * 1.5,
+            t.position.y - 0.5,
+            t.position.z + (-m[10]) * 1.5
+          );
+        }
+      }
+    }
+ 
+    model.visible = true;
+    modelPlaced = true;
+    reticle.visible = false;
+    hintEl.textContent = '🚶 Ходи вокруг модели!';
+  }
+ 
+  // ── Render loop ───────────────────────────────────────────────────────────
+  function onXRFrame(timestamp, frame) {
+    if (!frame) return;
+ 
+    if (mixer) mixer.update(clock.getDelta());
+ 
+    if (hitTestSource && localSpace && !modelPlaced) {
+      var results = frame.getHitTestResults(hitTestSource);
+      if (results.length > 0) {
+        var pose = results[0].getPose(localSpace);
+        if (pose) {
+          reticle.visible = true;
+          reticle.matrix.fromArray(pose.transform.matrix);
+        }
+      } else {
+        reticle.visible = false;
+      }
+    }
+ 
+    renderer.render(scene, camera);
+  }
+ 
+  // ── Exit ──────────────────────────────────────────────────────────────────
+  function onSessionEnd() {
+    if (hitTestSource) { try { hitTestSource.cancel(); } catch(e) {} hitTestSource = null; }
+    xrSession = null;
+    modelPlaced = false;
+    modelLoaded = false;
+    mixer = null;
+    model = null;
+    arUI.classList.remove('visible');
+    overlay.classList.remove('hidden');
+    if (renderer) {
+      renderer.setAnimationLoop(null);
+      renderer.domElement.remove();
+      renderer.dispose();
+      renderer = null;
     }
   }
  
-  renderer.render(scene, camera);
-}
+  exitBtn.addEventListener('click', function() {
+    if (xrSession) xrSession.end();
+  });
  
-// ── Exit ──────────────────────────────────────────────────────────────────────
-function onSessionEnd() {
-  hitTestSource?.cancel?.();
-  hitTestSource = null;
-  xrSession = null;
-  modelPlaced = false;
-  modelLoaded = false;
-  mixer = null;
-  model = null;
-  arUI.classList.remove('visible');
-  overlay.classList.remove('hidden');
-  if (renderer) {
-    renderer.setAnimationLoop(null);
-    renderer.domElement.remove();
-    renderer.dispose();
-    renderer = null;
-  }
-}
+  window.addEventListener('resize', function() {
+    if (!renderer || !camera) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
  
-exitBtn.addEventListener('click', () => xrSession?.end());
- 
-window.addEventListener('resize', () => {
-  if (!renderer || !camera) return;
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+})();
 </script>
 </body>
 </html>
+ 
