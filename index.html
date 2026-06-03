@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Animated Models Showcase</title>
+    <title>AR Smart Placement Showcase</title>
     <style>
         body { 
             margin: 0; 
@@ -22,7 +22,6 @@
         }
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-    
     <script type="importmap">
         {
             "imports": {
@@ -33,7 +32,7 @@
     </script>
 </head>
 <body>
-    <div id="info">Для AR потребуется телефон с поддержкой WebXR</div>
+    <div id="info">Откройте ссылку на телефоне и нажмите "START AR"</div>
     
     <script type="module">
         import * as THREE from 'three';
@@ -43,6 +42,10 @@
         let camera, scene, renderer;
         let mixers = [];
         const clock = new THREE.Clock();
+
+        // Настройки генерации позиций
+        const placedPositions = [];
+        const MIN_DISTANCE = 2.0; // Минимальное расстояние между моделями в метрах (настройте под размер моделей)
 
         init();
         animate();
@@ -55,24 +58,29 @@
 
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
-            // Освещение, чтобы модели не были черными
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 2);
+            // Освещение сцены
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 2.5);
             light.position.set(0.5, 1, 0.25);
             scene.add(light);
             
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
             directionalLight.position.set(1, 4, 2);
             scene.add(directionalLight);
 
-            // Настройка рендера (alpha: true обязателен для AR, чтобы видеть камеру)
+            // Настройка рендерера
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.xr.enabled = true; // Включаем поддержку WebXR
+            renderer.xr.enabled = true;
+            
+            // ВАЖНО: Задаем системе XR использовать пол как точку отсчета высоты (Y = 0)
+            renderer.xr.setReferenceSpaceType('local-floor'); 
             container.appendChild(renderer.domElement);
 
-            // Добавляем кнопку "START AR"
-            document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+            // Запрашиваем функцию определения пола ('local-floor') при запуске AR
+            document.body.appendChild(ARButton.createButton(renderer, { 
+                requiredFeatures: ['local-floor'] 
+            }));
 
             const loader = new GLTFLoader();
             const models = ['Turtle.glb', 'Whale.glb', 'Iguana.glb'];
@@ -81,22 +89,18 @@
                 loader.load(modelFile, function (gltf) {
                     const model = gltf.scene;
 
-                    // --- Рандомизация позиции ---
-                    // X (по горизонтали): от -2 до +2 метров
-                    const randomX = (Math.random() - 0.5) * 4;
-                    // Z (в глубину от пользователя): от -1.5 до -4 метров (чтобы они сразу были в поле зрения)
-                    const randomZ = - (Math.random() * 2.5 + 1.5);
-                    // Y (высота): 0 (на уровне устройства/пола), можно изменить по необходимости
-                    const randomY = (Math.random() - 0.5) * 1; 
+                    // Получаем уникальную позицию на плоскости, которая не пересекается с другими
+                    const coordinates = generateNonOverlappingPosition();
 
-                    model.position.set(randomX, randomY, randomZ);
+                    // Y устанавливаем строго в 0, так как local-floor автоматически выравнивает эту координату по полу комнаты
+                    model.position.set(coordinates.x, 0, coordinates.z);
 
-                    // Добавим немного случайного вращения по оси Y для естественности
+                    // Случайный поворот вокруг своей оси, чтобы они смотрели в разные стороны
                     model.rotation.y = Math.random() * Math.PI * 2;
 
                     scene.add(model);
 
-                    // --- Настройка анимации ---
+                    // Запуск анимаций
                     if (gltf.animations && gltf.animations.length > 0) {
                         const mixer = new THREE.AnimationMixer(model);
                         gltf.animations.forEach((clip) => {
@@ -112,6 +116,41 @@
             window.addEventListener('resize', onWindowResize);
         }
 
+        // Функция поиска свободного места на плоскости
+        function generateNonOverlappingPosition() {
+            let x, z;
+            let isValid = false;
+            let attempts = 0;
+
+            while (!isValid && attempts < 200) {
+                // Генерируем случайную точку на горизонтальной плоскости перед пользователем
+                // X (влево/вправо): от -3.5 до +3.5 метров
+                x = (Math.random() - 0.5) * 7;
+                // Z (удаление вперед): от -1.5 до -5.5 метров от начальной точки камеры
+                z = - (Math.random() * 4 + 1.5);
+
+                isValid = true;
+
+                // Проверяем расстояние до всех уже размещенных моделей
+                for (let i = 0; i < placedPositions.length; i++) {
+                    const other = placedPositions[i];
+                    // Расстояние между точками по формуле гипотенузы (2D плоскость XZ)
+                    const distance = Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(z - other.z, 2));
+
+                    if (distance < MIN_DISTANCE) {
+                        isValid = false; // Точка слишком близко к другой модели, пробуем еще раз
+                        break;
+                    }
+                }
+                attempts++;
+            }
+
+            // Запоминаем позицию, чтобы следующие модели ее учитывали
+            const finalPosition = { x: x, z: z };
+            placedPositions.push(finalPosition);
+            return finalPosition;
+        }
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -124,7 +163,6 @@
 
         function render() {
             const delta = clock.getDelta();
-            // Обновляем все анимации
             mixers.forEach(mixer => mixer.update(delta));
             renderer.render(scene, camera);
         }
