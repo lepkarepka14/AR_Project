@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Experience</title>
+    <title>AR Underground Pop-up Experience</title>
     <style>
         body { 
             margin: 0; 
@@ -75,8 +75,10 @@
         let hitTestSource = null;
         let hitTestSourceRequested = false;
 
-        const MIN_DISTANCE = 4.5; 
-        const TARGET_MODEL_SIZE = 1.2; 
+        // Настройки экстремального расстояния
+        const MIN_DISTANCE = 8.0; // Модели будут минимум в 8 метрах друг от друга
+        const SPAWN_AREA = 20.0;  // Площадка разброса 20x20 метров
+        const TARGET_MODEL_SIZE = 1.5; 
         const placedPositions = [];
         let loadedCount = 0;
 
@@ -88,7 +90,7 @@
             document.body.appendChild(container);
 
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 25);
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
             scene.add(ambientLight);
@@ -100,6 +102,18 @@
             baseGroup = new THREE.Group();
             baseGroup.visible = false;
             scene.add(baseGroup);
+
+            // --- НЕВИДИМАЯ МАСКА ГЛУБИНЫ (Depth Mask) ---
+            // Эта плоскость лежит на уровне пола (Y=0) и скрывает всё, что находится под землей.
+            const floorMaskGeometry = new THREE.PlaneGeometry(100, 100);
+            const floorMaskMaterial = new THREE.MeshBasicMaterial({ 
+                colorWrite: false // Не рисует цвет (прозрачная для камеры), но пишет глубину!
+            });
+            const floorMask = new THREE.Mesh(floorMaskGeometry, floorMaskMaterial);
+            floorMask.rotation.x = -Math.PI / 2;
+            floorMask.renderOrder = -1; // Маска должна просчитываться до рендера самих моделей
+            baseGroup.add(floorMask);
+            // ---------------------------------------------
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -194,9 +208,9 @@
             let x, z;
             let isValid = false;
             let attempts = 0;
-            while (!isValid && attempts < 1000) {
-                x = (Math.random() - 0.5) * 12; 
-                z = (Math.random() - 0.5) * 12; 
+            while (!isValid && attempts < 2000) {
+                x = (Math.random() - 0.5) * SPAWN_AREA; 
+                z = (Math.random() - 0.5) * SPAWN_AREA; 
                 isValid = true;
                 for (let i = 0; i < placedPositions.length; i++) {
                     const other = placedPositions[i];
