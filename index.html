@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Smart Placement Showcase</title>
+    <title>AR Reliable Floor Placement</title>
     <style>
         body { 
             margin: 0; 
             overflow: hidden; 
             background-color: #000;
+            font-family: sans-serif;
         }
         #info {
             position: absolute;
-            top: 10px;
+            top: 20px;
             width: 100%;
             text-align: center;
             color: white;
-            font-family: sans-serif;
             pointer-events: none;
             z-index: 100;
+            font-size: 16px;
+            text-shadow: 0px 1px 4px rgba(0,0,0,0.8);
         }
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
@@ -32,7 +34,7 @@
     </script>
 </head>
 <body>
-    <div id="info">Откройте ссылку на телефоне и нажмите "START AR"</div>
+    <div id="info">Нажмите START AR, затем плавно поводите камерой по полу</div>
     
     <script type="module">
         import * as THREE from 'three';
@@ -43,9 +45,16 @@
         let mixers = [];
         const clock = new THREE.Clock();
 
-        // Настройки генерации позиций
+        // Главный контейнер для всех моделей. Он встанет ровно на найденный пол.
+        let baseGroup; 
+        let floorFound = false;
+        let hitTestSource = null;
+        let hitTestSourceRequested = false;
+
+        // Настройки безопасности расстояний (в метрах)
+        const MIN_DISTANCE = 4.5; // Минимальное расстояние между объектами 
+        const TARGET_MODEL_SIZE = 1.2; // Принудительный размер моделей (ось максимума), чтобы исключить гигантские исходники
         const placedPositions = [];
-        const MIN_DISTANCE = 2.0; // Минимальное расстояние между моделями в метрах (настройте под размер моделей)
 
         init();
         animate();
@@ -55,31 +64,31 @@
             document.body.appendChild(container);
 
             scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 25);
 
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-
-            // Освещение сцены
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 2.5);
+            // Мягкий свет
+            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 3);
             light.position.set(0.5, 1, 0.25);
             scene.add(light);
             
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            directionalLight.position.set(1, 4, 2);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+            directionalLight.position.set(2, 5, 3);
             scene.add(directionalLight);
 
-            // Настройка рендерера
+            // Создаем базовую группу (изначально скрыта, пока не найдем пол)
+            baseGroup = new THREE.Group();
+            baseGroup.visible = false;
+            scene.add(baseGroup);
+
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.xr.enabled = true;
-            
-            // ВАЖНО: Задаем системе XR использовать пол как точку отсчета высоты (Y = 0)
-            renderer.xr.setReferenceSpaceType('local-floor'); 
             container.appendChild(renderer.domElement);
 
-            // Запрашиваем функцию определения пола ('local-floor') при запуске AR
+            // Запрашиваем hit-test для аппаратного сканирования поверхностей пола
             document.body.appendChild(ARButton.createButton(renderer, { 
-                requiredFeatures: ['local-floor'] 
+                requiredFeatures: ['hit-test'] 
             }));
 
             const loader = new GLTFLoader();
@@ -89,18 +98,26 @@
                 loader.load(modelFile, function (gltf) {
                     const model = gltf.scene;
 
-                    // Получаем уникальную позицию на плоскости, которая не пересекается с другими
-                    const coordinates = generateNonOverlappingPosition();
+                    // 1. ЗАЩИТА ОТ ПЕРЕКРЫТИЯ: Считаем реальный размер и нормализуем масштаб
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDimension = Math.max(size.x, size.y, size.z);
+                    
+                    // Если модель в исходнике огромная или крошечная, приводим её к контролируемому размеру
+                    if (maxDimension > 0) {
+                        const scaleFactor = TARGET_MODEL_SIZE / maxDimension;
+                        model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    }
 
-                    // Y устанавливаем строго в 0, так как local-floor автоматически выравнивает эту координату по полу комнаты
-                    model.position.set(coordinates.x, 0, coordinates.z);
-
-                    // Случайный поворот вокруг своей оси, чтобы они смотрели в разные стороны
+                    // 2. Генерируем уникальные координаты со строгой дистанцией друг от друга
+                    const coords = generateSafePosition();
+                    model.position.set(coords.x, 0, coords.z);
                     model.rotation.y = Math.random() * Math.PI * 2;
 
-                    scene.add(model);
+                    // Добавляем модель в базовую группу
+                    baseGroup.add(model);
 
-                    // Запуск анимаций
+                    // Анимация
                     if (gltf.animations && gltf.animations.length > 0) {
                         const mixer = new THREE.AnimationMixer(model);
                         gltf.animations.forEach((clip) => {
@@ -108,47 +125,42 @@
                         });
                         mixers.push(mixer);
                     }
-                }, undefined, function (error) {
-                    console.error('Ошибка загрузки модели: ' + modelFile, error);
+                }, undefined, function (e) {
+                    console.error('Ошибка загрузки:', modelFile, e);
                 });
             });
 
             window.addEventListener('resize', onWindowResize);
         }
 
-        // Функция поиска свободного места на плоскости
-        function generateNonOverlappingPosition() {
+        // Алгоритм жесткого разделения позиций в пространстве 12х12 метров
+        function generateSafePosition() {
             let x, z;
             let isValid = false;
             let attempts = 0;
 
-            while (!isValid && attempts < 200) {
-                // Генерируем случайную точку на горизонтальной плоскости перед пользователем
-                // X (влево/вправо): от -3.5 до +3.5 метров
-                x = (Math.random() - 0.5) * 7;
-                // Z (удаление вперед): от -1.5 до -5.5 метров от начальной точки камеры
-                z = - (Math.random() * 4 + 1.5);
+            while (!isValid && attempts < 1000) {
+                // Разброс координат относительно центральной точки пола
+                x = (Math.random() - 0.5) * 12; 
+                z = (Math.random() - 0.5) * 12; 
 
                 isValid = true;
 
-                // Проверяем расстояние до всех уже размещенных моделей
                 for (let i = 0; i < placedPositions.length; i++) {
                     const other = placedPositions[i];
-                    // Расстояние между точками по формуле гипотенузы (2D плоскость XZ)
                     const distance = Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(z - other.z, 2));
 
                     if (distance < MIN_DISTANCE) {
-                        isValid = false; // Точка слишком близко к другой модели, пробуем еще раз
+                        isValid = false; 
                         break;
                     }
                 }
                 attempts++;
             }
 
-            // Запоминаем позицию, чтобы следующие модели ее учитывали
-            const finalPosition = { x: x, z: z };
-            placedPositions.push(finalPosition);
-            return finalPosition;
+            const finalPos = { x: x, z: z };
+            placedPositions.push(finalPos);
+            return finalPos;
         }
 
         function onWindowResize() {
@@ -161,9 +173,47 @@
             renderer.setAnimationLoop(render);
         }
 
-        function render() {
+        function render(timestamp, frame) {
             const delta = clock.getDelta();
             mixers.forEach(mixer => mixer.update(delta));
+
+            // Логика сканирования и поиска пола в реальном времени
+            if (frame && !floorFound) {
+                const referenceSpace = renderer.xr.getReferenceSpace();
+                const session = renderer.xr.getSession();
+
+                if (hitTestSourceRequested === false) {
+                    session.requestReferenceSpace('viewer').then(function (viewerSpace) {
+                        session.requestHitTestSource({ space: viewerSpace }).then(function (source) {
+                            hitTestSource = source;
+                        });
+                    });
+                    hitTestSourceRequested = true;
+                }
+
+                if (hitTestSource) {
+                    const hitTestResults = frame.getHitTestResults(hitTestSource);
+                    
+                    // Если ARCore/ARKit нашел устойчивую горизонтальную плоскость (пол):
+                    if (hitTestResults.length > 0) {
+                        const hit = hitTestResults[0];
+                        const pose = hit.getPose(referenceSpace);
+
+                        // Перемещаем всю группу моделей ровно на физическую поверхность земли
+                        baseGroup.position.fromArray(pose.transform.position);
+                        
+                        // Показываем сцену пользователю
+                        baseGroup.visible = true; 
+                        floorFound = true; // Выключаем сканирование, жестко закрепив координаты в комнате
+
+                        document.getElementById('info').innerText = "Пол успешно определен! Модели расставлены.";
+                        setTimeout(() => {
+                            document.getElementById('info').style.display = 'none';
+                        }, 3000);
+                    }
+                }
+            }
+
             renderer.render(scene, camera);
         }
     </script>
