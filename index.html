@@ -1,26 +1,49 @@
 ﻿<!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Tap to Place</title>
+    <title>AR Experience</title>
     <style>
         body { 
             margin: 0; 
             overflow: hidden; 
-            background-color: #000;
-            font-family: sans-serif;
+            background-color: #1a1a1a;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-        #info {
+        #ui-container {
             position: absolute;
-            top: 20px;
-            width: 100%;
-            text-align: center;
-            color: white;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             z-index: 100;
+        }
+        #loading {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
             font-size: 16px;
-            text-shadow: 0px 1px 4px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            transition: opacity 0.5s;
+        }
+        #instruction {
+            position: absolute;
+            bottom: 100px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
         }
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
@@ -34,7 +57,10 @@
     </script>
 </head>
 <body>
-    <div id="info">Нажмите START AR, наведите появившееся кольцо на пол и коснитесь экрана</div>
+    <div id="ui-container">
+        <div id="loading">Loading 3D models (0/3)...</div>
+        <div id="instruction">Point the reticle at the floor and tap the screen</div>
+    </div>
     
     <script type="module">
         import * as THREE from 'three';
@@ -52,6 +78,7 @@
         const MIN_DISTANCE = 4.5; 
         const TARGET_MODEL_SIZE = 1.2; 
         const placedPositions = [];
+        let loadedCount = 0;
 
         init();
         animate();
@@ -63,15 +90,13 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 25);
 
-            const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 3);
-            light.position.set(0.5, 1, 0.25);
-            scene.add(light);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+            scene.add(ambientLight);
             
             const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
             directionalLight.position.set(2, 5, 3);
             scene.add(directionalLight);
 
-            // Базовая группа для моделей (скрыта до тапа по экрану)
             baseGroup = new THREE.Group();
             baseGroup.visible = false;
             scene.add(baseGroup);
@@ -82,36 +107,45 @@
             renderer.xr.enabled = true;
             container.appendChild(renderer.domElement);
 
-            document.body.appendChild(ARButton.createButton(renderer, { 
-                requiredFeatures: ['hit-test'] 
-            }));
+            const arButton = ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] });
+            arButton.style.bottom = '30px';
+            arButton.style.padding = '12px 24px';
+            arButton.style.borderRadius = '30px';
+            arButton.style.fontWeight = 'bold';
+            arButton.style.display = 'none'; 
+            document.body.appendChild(arButton);
 
-            // --- Создаем прицел (Reticle) ---
             reticle = new THREE.Mesh(
                 new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
-                new THREE.MeshBasicMaterial()
+                new THREE.MeshBasicMaterial({ color: 0xffffff })
             );
             reticle.matrixAutoUpdate = false;
             reticle.visible = false;
             scene.add(reticle);
 
-            // --- Настройка контроллера (Тап по экрану) ---
             controller = renderer.xr.getController(0);
             controller.addEventListener('select', onSelect);
             scene.add(controller);
 
-            // Загрузка моделей
-            const loader = new GLTFLoader();
+            const manager = new THREE.LoadingManager();
+            manager.onLoad = function () {
+                document.getElementById('loading').style.display = 'none';
+                arButton.style.display = 'block';
+            };
+
+            const loader = new GLTFLoader(manager);
             const models = ['Turtle.glb', 'Whale.glb', 'Iguana.glb'];
 
             models.forEach(modelFile => {
                 loader.load(modelFile, function (gltf) {
+                    loadedCount++;
+                    document.getElementById('loading').innerText = `Loading 3D models (${loadedCount}/3)...`;
+
                     const model = gltf.scene;
 
                     const box = new THREE.Box3().setFromObject(model);
                     const size = box.getSize(new THREE.Vector3());
                     const maxDimension = Math.max(size.x, size.y, size.z);
-                    
                     if (maxDimension > 0) {
                         const scaleFactor = TARGET_MODEL_SIZE / maxDimension;
                         model.scale.set(scaleFactor, scaleFactor, scaleFactor);
@@ -130,26 +164,29 @@
                         });
                         mixers.push(mixer);
                     }
-                }, undefined, function (e) {
-                    console.error('Ошибка загрузки:', modelFile, e);
                 });
+            });
+
+            renderer.xr.addEventListener('sessionstart', () => {
+                document.getElementById('instruction').style.display = 'block';
+            });
+            renderer.xr.addEventListener('sessionend', () => {
+                document.getElementById('instruction').style.display = 'none';
+                baseGroup.visible = false;
+                reticle.visible = false;
             });
 
             window.addEventListener('resize', onWindowResize);
         }
 
-        // Логика при тапе на экран
         function onSelect() {
             if (reticle.visible) {
-                // Перемещаем группу с моделями в точку, где находится прицел
                 baseGroup.position.setFromMatrixPosition(reticle.matrix);
                 baseGroup.visible = true;
-                
-                document.getElementById('info').innerText = "Модели размещены! Вы можете тапнуть еще раз, чтобы переместить их.";
+                document.getElementById('instruction').innerText = "Models placed! Tap again to reposition.";
                 setTimeout(() => {
-                    const infoEl = document.getElementById('info');
-                    if(infoEl) infoEl.style.display = 'none';
-                }, 4000);
+                    document.getElementById('instruction').style.display = 'none';
+                }, 3000);
             }
         }
 
@@ -157,17 +194,13 @@
             let x, z;
             let isValid = false;
             let attempts = 0;
-
             while (!isValid && attempts < 1000) {
                 x = (Math.random() - 0.5) * 12; 
                 z = (Math.random() - 0.5) * 12; 
-
                 isValid = true;
-
                 for (let i = 0; i < placedPositions.length; i++) {
                     const other = placedPositions[i];
                     const distance = Math.sqrt(Math.pow(x - other.x, 2) + Math.pow(z - other.z, 2));
-
                     if (distance < MIN_DISTANCE) {
                         isValid = false; 
                         break;
@@ -175,7 +208,6 @@
                 }
                 attempts++;
             }
-
             const finalPos = { x: x, z: z };
             placedPositions.push(finalPos);
             return finalPos;
@@ -195,7 +227,6 @@
             const delta = clock.getDelta();
             mixers.forEach(mixer => mixer.update(delta));
 
-            // Логика работы прицела (Reticle)
             if (frame) {
                 const referenceSpace = renderer.xr.getReferenceSpace();
                 const session = renderer.xr.getSession();
@@ -206,35 +237,20 @@
                             hitTestSource = source;
                         });
                     });
-
-                    // Очистка при выходе из AR
-                    session.addEventListener('end', function () {
-                        hitTestSourceRequested = false;
-                        hitTestSource = null;
-                        reticle.visible = false;
-                        baseGroup.visible = false;
-                        document.getElementById('info').style.display = 'block';
-                        document.getElementById('info').innerText = "Нажмите START AR, наведите появившееся кольцо на пол и коснитесь экрана";
-                    });
-
                     hitTestSourceRequested = true;
                 }
 
                 if (hitTestSource) {
                     const hitTestResults = frame.getHitTestResults(hitTestSource);
-                    
                     if (hitTestResults.length > 0) {
                         const hit = hitTestResults[0];
-                        // Показываем прицел и двигаем его по сетке пола
                         reticle.visible = true;
                         reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
                     } else {
-                        // Прячем прицел, если камера потеряла пол из виду
                         reticle.visible = false;
                     }
                 }
             }
-
             renderer.render(scene, camera);
         }
     </script>
